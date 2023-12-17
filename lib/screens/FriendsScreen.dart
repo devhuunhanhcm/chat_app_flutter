@@ -51,163 +51,192 @@ class _FriendsScreenState extends State<FriendsScreen> {
           },
           child: const Icon(Icons.search_outlined),
         ),
-        body: StreamBuilder(
-          stream: _firestore
-              .collection('users')
-              .doc(_auth.currentUser!.uid)
-              .snapshots(),
-          builder:
-              (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-            if (!snapshot.hasData) {
-              return const SizedBox();
-            }
-
-            var currentUser = UserModel.fromSnap(snapshot.data!);
-
-            return ListView.builder(
-              itemCount: currentUser.following.length,
-              itemBuilder: (context, index) {
-                String followingUserId = currentUser.following[index];
-
-                return FutureBuilder(
-                  future:
-                      _firestore.collection('users').doc(followingUserId).get(),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+          child: Column(
+            children: [
+              const SizedBox(
+                width: double.infinity,
+                child: Text(
+                  "Followings",
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: AppColors.secondaryText,
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              Expanded(
+                child: StreamBuilder(
+                  stream: _firestore
+                      .collection('users')
+                      .doc(_auth.currentUser!.uid)
+                      .snapshots(),
                   builder: (BuildContext context,
-                      AsyncSnapshot<DocumentSnapshot> userSnapshot) {
-                    if (!userSnapshot.hasData) {
+                      AsyncSnapshot<DocumentSnapshot> snapshot) {
+                    if (!snapshot.hasData) {
                       return const SizedBox();
                     }
 
-                    var followingUser = UserModel.fromSnap(userSnapshot.data!);
+                    var currentUser = UserModel.fromSnap(snapshot.data!);
 
-                    return Container(
-                      margin: const EdgeInsets.only(top: 16),
-                      child: GestureDetector(
-                        onTap: () {
-                          showModalBottomSheet(
-                              isScrollControlled: true,
-                              shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(32))),
-                              context: context,
-                              builder: (BuildContext context) {
-                                return SizedBox(
-                                  height: 350,
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: <Widget>[
-                                      const SizedBox(
-                                        height: 10,
-                                      ),
-                                      ListTile(
-                                        leading: ContactAvatar(
-                                            url: followingUser.photoUrl,
-                                            size: 30),
-                                        title: Text(
-                                          followingUser.fullName,
-                                          style: const TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.w500),
+                    return ListView.builder(
+                      itemCount: currentUser.following.length,
+                      itemBuilder: (context, index) {
+                        String followingUserId = currentUser.following[index];
+
+                        return FutureBuilder(
+                          future: _firestore
+                              .collection('users')
+                              .doc(followingUserId)
+                              .get(),
+                          builder: (BuildContext context,
+                              AsyncSnapshot<DocumentSnapshot> userSnapshot) {
+                            if (!userSnapshot.hasData) {
+                              return const SizedBox();
+                            }
+
+                            var followingUser =
+                                UserModel.fromSnap(userSnapshot.data!);
+
+                            return GestureDetector(
+                              onTap: () {
+                                showModalBottomSheet(
+                                    isScrollControlled: true,
+                                    shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(32))),
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return SizedBox(
+                                        height: 350,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          children: <Widget>[
+                                            const SizedBox(
+                                              height: 10,
+                                            ),
+                                            ListTile(
+                                              leading: ContactAvatar(
+                                                  url: followingUser.photoUrl,
+                                                  size: 30),
+                                              title: Text(
+                                                followingUser.fullName,
+                                                style: const TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                        FontWeight.w500),
+                                              ),
+                                              subtitle:
+                                                  const Text('View my profile'),
+                                              onTap: () {},
+                                              trailing: const Icon(
+                                                  Icons.change_circle_outlined),
+                                            ),
+                                            const SizedBox(
+                                              height: 10,
+                                            ),
+                                            ListTile(
+                                              leading: const Icon(
+                                                  Icons.message_outlined,
+                                                  size: 28),
+                                              title: const Text("Chat",
+                                                  style:
+                                                      TextStyle(fontSize: 18)),
+                                              onTap: () async {
+                                                ChatRoom? chatroomModel =
+                                                    await _chatService
+                                                        .getChatroomModel(
+                                                            followingUser);
+
+                                                if (chatroomModel != null) {
+                                                  Navigator.pop(context);
+                                                  // ignore: use_build_context_synchronously
+                                                  Navigator.push(context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) {
+                                                    return ChatScreen(
+                                                      targetUser: followingUser,
+                                                      currentUser: user!,
+                                                      chatRoom: chatroomModel,
+                                                    );
+                                                  }));
+                                                }
+                                              },
+                                            ),
+                                            ListTile(
+                                              leading: const Icon(
+                                                  Icons.account_circle_outlined,
+                                                  size: 28),
+                                              title: const Text("View profile",
+                                                  style:
+                                                      TextStyle(fontSize: 18)),
+                                              onTap: () {
+                                                Navigator.push(context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) {
+                                                  return ProfileScreen(
+                                                      uid: followingUser.uid);
+                                                }));
+                                              },
+                                            ),
+                                            ListTile(
+                                              leading: const Icon(
+                                                  Icons.remove_circle_outline,
+                                                  size: 28),
+                                              title: const Text("Unfollow",
+                                                  style:
+                                                      TextStyle(fontSize: 18)),
+                                              onTap: () {
+                                                followUser(followingUser.uid);
+                                              },
+                                            ),
+                                            ListTile(
+                                              leading: const Icon(
+                                                  Icons.cancel_outlined,
+                                                  size: 30),
+                                              title: const Text("Cancel",
+                                                  style:
+                                                      TextStyle(fontSize: 18)),
+                                              onTap: () =>
+                                                  Navigator.pop(context),
+                                            ),
+                                          ],
                                         ),
-                                        subtitle: const Text('View my profile'),
-                                        onTap: () {},
-                                        trailing: const Icon(
-                                            Icons.change_circle_outlined),
-                                      ),
-                                      const SizedBox(
-                                        height: 10,
-                                      ),
-                                      ListTile(
-                                        leading: const Icon(
-                                            Icons.message_outlined,
-                                            size: 28),
-                                        title: const Text("Chat",
-                                            style: TextStyle(fontSize: 18)),
-                                        onTap: () async {
-                                          ChatRoom? chatroomModel =
-                                              await _chatService
-                                                  .getChatroomModel(
-                                                      followingUser);
-
-                                          if (chatroomModel != null) {
-                                            Navigator.pop(context);
-                                            // ignore: use_build_context_synchronously
-                                            Navigator.push(context,
-                                                MaterialPageRoute(
-                                                    builder: (context) {
-                                              return ChatScreen(
-                                                targetUser: followingUser,
-                                                currentUser: user!,
-                                                chatRoom: chatroomModel,
-                                              );
-                                            }));
-                                          }
-                                        },
-                                      ),
-                                      ListTile(
-                                        leading: const Icon(
-                                            Icons.account_circle_outlined,
-                                            size: 28),
-                                        title: const Text("View profile",
-                                            style: TextStyle(fontSize: 18)),
-                                        onTap: () {
-                                          Navigator.push(context,
-                                              MaterialPageRoute(
-                                                  builder: (context) {
-                                            return ProfileScreen(
-                                                uid: followingUser.uid);
-                                          }));
-                                        },
-                                      ),
-                                      ListTile(
-                                        leading: const Icon(
-                                            Icons.remove_circle_outline,
-                                            size: 28),
-                                        title: const Text("Unfollow",
-                                            style: TextStyle(fontSize: 18)),
-                                        onTap: () {
-                                          followUser(followingUser.uid);
-                                        },
-                                      ),
-                                      ListTile(
-                                        leading: const Icon(
-                                            Icons.cancel_outlined,
-                                            size: 30),
-                                        title: const Text("Cancel",
-                                            style: TextStyle(fontSize: 18)),
-                                        onTap: () => Navigator.pop(context),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              });
-                        },
-                        child: ListTile(
-                          title: Text(
-                            followingUser.fullName,
-                            style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.blackColor),
-                          ),
-                          subtitle: Text(
-                            followingUser.isOnline ? "Online" : "Offline",
-                            style: TextStyle(
-                                color: followingUser.isOnline
-                                    ? Colors.green
-                                    : Colors.grey),
-                          ),
-                          leading: ContactAvatar(
-                              url: followingUser.photoUrl, size: 30),
-                          trailing: const Icon(Icons.more_horiz_outlined),
-                        ),
-                      ),
+                                      );
+                                    });
+                              },
+                              child: ListTile(
+                                title: Text(
+                                  followingUser.fullName,
+                                  style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.blackColor),
+                                ),
+                                subtitle: Text(
+                                  followingUser.isOnline ? "Online" : "Offline",
+                                  style: TextStyle(
+                                      color: followingUser.isOnline
+                                          ? Colors.green
+                                          : Colors.grey),
+                                ),
+                                leading: ContactAvatar(
+                                    url: followingUser.photoUrl, size: 30),
+                                trailing: const Icon(Icons.more_horiz_outlined),
+                              ),
+                            );
+                          },
+                        );
+                      },
                     );
                   },
-                );
-              },
-            );
-          },
+                ),
+              ),
+            ],
+          ),
         ));
   }
 }

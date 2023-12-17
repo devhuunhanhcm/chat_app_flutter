@@ -45,12 +45,18 @@ class _ChatScreenState extends State<ChatScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  widget.targetUser.fullName.toString(),
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 17),
+                SizedBox(
+                  width: 100,
+                  child: Text(
+                    widget.targetUser.fullName.toString(),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 17),
+                  ),
                 ),
                 widget.targetUser.isOnline
                     ? const Text(
@@ -87,152 +93,167 @@ class _ChatScreenState extends State<ChatScreen> {
               ))
         ],
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                child: StreamBuilder(
-                  stream: FirebaseFirestore.instance
-                      .collection("chatrooms")
-                      .doc(widget.chatRoom.id)
-                      .collection("messages")
-                      .orderBy("createdAt", descending: true)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.active) {
-                      if (snapshot.hasData) {
-                        QuerySnapshot dataSnapshot =
-                            snapshot.data as QuerySnapshot;
+      body: GestureDetector(
+        onTap: () {
+          FocusScopeNode currentFocus = FocusScope.of(context);
 
-                        return ListView.builder(
-                          reverse: true,
-                          itemCount: dataSnapshot.docs.length,
-                          itemBuilder: (context, index) {
-                            MessageModel currentMessage = MessageModel.fromJson(
-                                dataSnapshot.docs[index].data()
-                                    as Map<String, dynamic>);
+          if (!currentFocus.hasPrimaryFocus) {
+            currentFocus.unfocus();
+          }
+        },
+        child: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  child: StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection("chatrooms")
+                        .doc(widget.chatRoom.id)
+                        .collection("messages")
+                        .orderBy("createdAt", descending: true)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.active) {
+                        if (snapshot.hasData) {
+                          QuerySnapshot dataSnapshot =
+                              snapshot.data as QuerySnapshot;
 
-                            bool isSameDate = false;
-                            String? newDate = '';
-                            String messageTime = currentMessage
-                                .createAt!.microsecondsSinceEpoch
-                                .toString();
-                            final DateTime date =
-                                returnDateAndTimeFormat(messageTime);
+                          return ListView.builder(
+                            reverse: true,
+                            itemCount: dataSnapshot.docs.length,
+                            itemBuilder: (context, index) {
+                              MessageModel currentMessage =
+                                  MessageModel.fromJson(dataSnapshot.docs[index]
+                                      .data() as Map<String, dynamic>);
 
-                            if (index == 0 && dataSnapshot.docs.length == 1) {
-                              newDate = groupMessageDateAndTime(messageTime)
+                              bool isSameDate = false;
+                              String? newDate = '';
+                              String messageTime = currentMessage
+                                  .createAt!.microsecondsSinceEpoch
                                   .toString();
-                            } else if (index == dataSnapshot.docs.length - 1) {
-                              newDate = groupMessageDateAndTime(messageTime)
-                                  .toString();
-                            } else {
-                              MessageModel nextMessage = MessageModel.fromJson(
-                                  dataSnapshot.docs[index + 1].data()
-                                      as Map<String, dynamic>);
                               final DateTime date =
                                   returnDateAndTimeFormat(messageTime);
-                              final DateTime prevDate = returnDateAndTimeFormat(
-                                  nextMessage.createAt!.microsecondsSinceEpoch
-                                      .toString());
 
-                              isSameDate = date.isAtSameMomentAs(prevDate);
-
-                              MessageModel prevMessage;
-                              if (index > 0) {
-                                prevMessage = MessageModel.fromJson(
-                                    dataSnapshot.docs[index - 1].data()
-                                        as Map<String, dynamic>);
+                              if (index == 0 && dataSnapshot.docs.length == 1) {
+                                newDate = groupMessageDateAndTime(messageTime)
+                                    .toString();
+                              } else if (index ==
+                                  dataSnapshot.docs.length - 1) {
+                                newDate = groupMessageDateAndTime(messageTime)
+                                    .toString();
                               } else {
-                                prevMessage = currentMessage;
-                              }
-                              newDate = isSameDate
-                                  ? ''
-                                  : groupMessageDateAndTime(prevMessage
-                                          .createAt!.microsecondsSinceEpoch
-                                          .toString())
-                                      .toString();
-                            }
+                                MessageModel nextMessage =
+                                    MessageModel.fromJson(
+                                        dataSnapshot.docs[index + 1].data()
+                                            as Map<String, dynamic>);
+                                final DateTime date =
+                                    returnDateAndTimeFormat(messageTime);
+                                final DateTime prevDate =
+                                    returnDateAndTimeFormat(nextMessage
+                                        .createAt!.microsecondsSinceEpoch
+                                        .toString());
 
-                            return Container(
-                                width: double.infinity,
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    if (newDate.isNotEmpty)
-                                      Center(
-                                          child: Container(
-                                              child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(newDate),
-                                      ))),
-                                    ChatMessageItem(
-                                        isMe: currentMessage.sender ==
-                                            widget.currentUser.uid,
-                                        message: currentMessage.text.toString(),
-                                        messageTime: currentMessage
+                                isSameDate = date.isAtSameMomentAs(prevDate);
+
+                                MessageModel prevMessage;
+                                if (index > 0) {
+                                  prevMessage = MessageModel.fromJson(
+                                      dataSnapshot.docs[index - 1].data()
+                                          as Map<String, dynamic>);
+                                } else {
+                                  prevMessage = currentMessage;
+                                }
+                                newDate = isSameDate
+                                    ? ''
+                                    : groupMessageDateAndTime(prevMessage
                                             .createAt!.microsecondsSinceEpoch
-                                            .toString()),
-                                  ],
-                                ));
-                          },
-                        );
-                      } else if (snapshot.hasError) {
-                        return const Center(
-                          child: Text(
-                              "An error occured! Please check your internet connection."),
-                        );
+                                            .toString())
+                                        .toString();
+                              }
+
+                              return Container(
+                                  width: double.infinity,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      if (newDate.isNotEmpty)
+                                        Center(
+                                            child: Container(
+                                                child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(newDate),
+                                        ))),
+                                      ChatMessageItem(
+                                          isMe: currentMessage.sender ==
+                                              widget.currentUser.uid,
+                                          message:
+                                              currentMessage.text.toString(),
+                                          messageTime: currentMessage
+                                              .createAt!.microsecondsSinceEpoch
+                                              .toString()),
+                                    ],
+                                  ));
+                            },
+                          );
+                        } else if (snapshot.hasError) {
+                          return const Center(
+                            child: Text(
+                                "An error occured! Please check your internet connection."),
+                          );
+                        } else {
+                          return const Center(
+                            child: Text("Say hi to your new friend"),
+                          );
+                        }
                       } else {
                         return const Center(
-                          child: Text("Say hi to your new friend"),
+                          child: CircularProgressIndicator(),
                         );
                       }
-                    } else {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                  },
+                    },
+                  ),
                 ),
               ),
-            ),
-            Container(
-              color: Colors.grey[200],
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-              child: Row(
-                children: [
-                  Flexible(
-                    child: TextField(
-                      controller: _messageController,
-                      maxLines: null,
-                      decoration: const InputDecoration(
-                          border: InputBorder.none, hintText: "Enter message"),
+              Container(
+                color: Colors.grey[200],
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: TextField(
+                        controller: _messageController,
+                        maxLines: null,
+                        decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            hintText: "Enter message"),
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      _chatService.sendMessage(
-                          widget.chatRoom,
-                          widget.currentUser,
-                          widget.targetUser,
-                          _messageController.text);
-                      setState(() {
-                        _messageController.text = '';
-                      });
-                    },
-                    icon: Icon(
-                      Icons.send,
-                      color: Theme.of(context).colorScheme.secondary,
+                    IconButton(
+                      onPressed: () {
+                        _chatService.sendMessage(
+                            widget.chatRoom,
+                            widget.currentUser,
+                            widget.targetUser,
+                            _messageController.text);
+                        setState(() {
+                          _messageController.text = '';
+                        });
+                      },
+                      icon: Icon(
+                        Icons.send,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

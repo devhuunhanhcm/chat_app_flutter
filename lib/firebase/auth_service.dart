@@ -32,6 +32,7 @@ class FirebaseAuthService {
           following: [],
           phone: phone,
           pushToken: '',
+          postNum: 0,
           isOnline: false);
 
       await _firestore
@@ -57,6 +58,7 @@ class FirebaseAuthService {
       followers: [],
       following: [],
       pushToken: '',
+      postNum: 0,
       isOnline: false);
 
   Future<UserModel> getUser() async {
@@ -100,7 +102,6 @@ class FirebaseAuthService {
       await _auth.signOut();
       return true;
     } catch (e) {
-      print(e.toString());
       return false;
     }
   }
@@ -164,12 +165,12 @@ class FirebaseAuthService {
     if (querySnapshot.docs.isNotEmpty) {
       for (var doc in querySnapshot.docs) {
         // Convert each document snapshot to your user model
-        UserModel user = UserModel.fromSnap(doc);
-        print(user.username);
-        users.add(user);
+        if (doc.data()['uid'] != user!.uid) {
+          UserModel foundUser = UserModel.fromSnap(doc);
+          users.add(foundUser);
+        }
       }
     }
-    print(users.toString());
     return users;
   }
 }

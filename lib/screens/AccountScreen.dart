@@ -3,6 +3,7 @@ import 'package:chat_app_flutter/firebase/auth_service.dart';
 import 'package:chat_app_flutter/models/user.dart';
 import 'package:chat_app_flutter/providers/user_provider.dart';
 import 'package:chat_app_flutter/screens/ProfileScreen.dart';
+import 'package:chat_app_flutter/screens/ProfileScreen.dart';
 import 'package:chat_app_flutter/utils/style/app_colors.dart';
 import 'package:chat_app_flutter/utils/toast/toast.dart';
 import 'package:chat_app_flutter/widget/contact_avatar.dart';
@@ -61,16 +62,16 @@ class _AccountScreenState extends State<AccountScreen> {
         child: Column(
           children: [
             ListTile(
-              leading: ContactAvatar(url: user!.photoUrl, size: 30),
+              leading: ContactAvatar(url: user?.photoUrl ?? '', size: 30),
               title: Text(
-                user.fullName.capitalize(),
+                user?.fullName ?? '',
                 style:
                     const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
               ),
               subtitle: const Text('View my profile'),
               onTap: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return ProfileScreen(uid: user.uid);
+                  return ProfileScreen(uid: user?.uid ?? '');
                 }));
               },
               trailing: const Icon(Icons.change_circle_outlined),

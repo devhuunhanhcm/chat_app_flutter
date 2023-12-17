@@ -20,9 +20,9 @@ class FirebaseMessagingService {
 
   static Future<String> getFirebaseMessageToken() async {
     await _fireBaseMessaging.requestPermission();
-    String token =
+    String fcmToken =
         await _fireBaseMessaging.getToken().then((token) => token.toString());
-    return token;
+    return fcmToken;
   }
 
   static Future<void> updateActiveStatus(bool isOnline, String userId) async {

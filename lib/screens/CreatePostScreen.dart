@@ -8,6 +8,7 @@ import 'package:chat_app_flutter/utils/loading/message_dialog.dart';
 import 'package:chat_app_flutter/utils/style/app_typography.dart';
 import 'package:chat_app_flutter/utils/toast/toast.dart';
 import 'package:chat_app_flutter/utils/utils.dart';
+import 'package:chat_app_flutter/widget/contact_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -128,14 +129,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               padding: const EdgeInsets.only(bottom: 10),
               child: Row(
                 children: [
-                  const CircleAvatar(
-                    backgroundImage:
-                        AssetImage('assets/images/default_avatar.jpg'),
-                  ),
+                  ContactAvatar(url: user!.photoUrl, size: 20),
                   Padding(
                     padding: const EdgeInsets.only(left: 18),
                     child: Text(
-                      user!.username,
+                      user.fullName,
                       style: MyTextStyle.textField
                           .copyWith(fontWeight: FontWeight.w600),
                     ),

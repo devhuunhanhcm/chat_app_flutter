@@ -12,6 +12,7 @@ class UserModel {
   final List following;
   final String pushToken;
   final bool isOnline;
+  final int postNum;
 
   UserModel(
       {required this.uid,
@@ -24,6 +25,7 @@ class UserModel {
       required this.followers,
       required this.following,
       required this.pushToken,
+      required this.postNum,
       required this.isOnline});
 
   Map<String, dynamic> toJson() => {
@@ -37,7 +39,8 @@ class UserModel {
         "followers": followers,
         "following": following,
         "pushToken": pushToken,
-        "isOnline": isOnline
+        "isOnline": isOnline,
+        "postNum": postNum
       };
 
   static UserModel fromSnap(DocumentSnapshot snap) {
@@ -53,6 +56,7 @@ class UserModel {
       following: snapshot["following"] ?? [],
       phone: snapshot["phone"] ?? '',
       isOnline: snapshot["isOnline"] ?? false,
+      postNum: snapshot["postNum"] ?? 0,
       pushToken: snapshot["pushToken"] ?? '',
     );
 

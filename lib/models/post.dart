@@ -7,9 +7,10 @@ class Post {
   final dynamic likes;
   final dynamic comments;
   final String postId;
-  final DateTime datePublished;
+  final DateTime createAt;
   final String postUrl;
   final String profImage;
+  final int commentNum;
 
   const Post({
     required this.content,
@@ -18,24 +19,26 @@ class Post {
     required this.likes,
     required this.postId,
     required this.comments,
-    required this.datePublished,
+    required this.createAt,
     required this.postUrl,
     required this.profImage,
+    required this.commentNum,
   });
 
   static Post fromSnap(DocumentSnapshot snap) {
     var snapshot = snap.data() as Map<String, dynamic>;
-    Timestamp snapshotDate = snapshot["datePublished"];
+    Timestamp snapshotDate = snapshot["createAt"];
     return Post(
         postId: snapshot["postId"] ?? '',
         postUrl: snapshot['postUrl'] ?? '',
         content: snapshot["description"] ?? '',
         likes: snapshot["likes"] ?? [],
         comments: snapshot["comments"] ?? [],
-        datePublished: snapshotDate.toDate() ?? DateTime.now(),
+        createAt: snapshotDate.toDate() ?? DateTime.now(),
         uid: snapshot["uid"] ?? '',
         fullName: snapshot["fullName"] ?? '',
-        profImage: snapshot['profImage'] ?? '');
+        profImage: snapshot['profImage'] ?? '',
+        commentNum: snapshot['commentNum'] ?? 0);
   }
 
   Map<String, dynamic> toJson() => {
@@ -44,14 +47,15 @@ class Post {
         "description": content,
         "likes": likes,
         "comments": comments,
-        "datePublished": datePublished,
+        "createAt": createAt,
         "uid": uid,
         "fullName": fullName,
-        'profImage': profImage
+        'profImage': profImage,
+        'commentNum': commentNum
       };
   String get formattedDate {
     final now = DateTime.now();
-    final difference = now.difference(datePublished);
+    final difference = now.difference(createAt);
     if (difference.inHours >= 24) {
       final days = difference.inDays;
       return '$days day${days > 1 ? 's' : ''} ago';

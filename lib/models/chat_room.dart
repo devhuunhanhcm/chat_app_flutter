@@ -10,16 +10,11 @@ class ChatRoom {
       {this.id, this.participants, this.lastMessage, this.lastMessageTime});
 
   static ChatRoom fromJson(Map<String, dynamic> json) {
-    DateTime dateTime = DateTime.now();
-    if (json["lastMessageTime"] != null) {
-      Timestamp timestamp = json["lastMessageTime"];
-      dateTime = timestamp.toDate();
-    }
     return ChatRoom(
       id: json["id"] ?? '',
       participants: json["participants"] ?? '',
       lastMessage: json["lastMessage"] ?? '',
-      lastMessageTime: dateTime,
+      lastMessageTime: json["lastMessageTime"]?.toDate(),
     );
   }
 

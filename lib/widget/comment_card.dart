@@ -1,11 +1,12 @@
+import 'package:chat_app_flutter/models/comment.dart';
 import 'package:chat_app_flutter/utils/style/app_colors.dart';
 import 'package:chat_app_flutter/widget/contact_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class CommentCard extends StatelessWidget {
-  final snap;
-  const CommentCard({Key? key, required this.snap}) : super(key: key);
+  final Comment comment;
+  const CommentCard({Key? key, required this.comment}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +14,7 @@ class CommentCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       child: Row(
         children: [
-          ContactAvatar(url: snap.data()['photoUrl'], size: 25),
+          ContactAvatar(url: comment.photoUrl.toString(), size: 25),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(left: 16),
@@ -25,13 +26,13 @@ class CommentCard extends StatelessWidget {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                            text: '${snap.data()['fullName']}: ',
+                            text: '${comment.fullName}: ',
                             style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.blackColor)),
                         TextSpan(
-                            text: ' ${snap.data()['text']}',
+                            text: ' ${comment.text}',
                             style: const TextStyle(
                                 fontSize: 16, color: AppColors.blackColor)),
                       ],
@@ -41,7 +42,7 @@ class CommentCard extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
                       DateFormat.yMMMd().format(
-                        snap.data()['datePublished'].toDate(),
+                        comment.datePublished!,
                       ),
                       style: const TextStyle(
                         fontSize: 12,

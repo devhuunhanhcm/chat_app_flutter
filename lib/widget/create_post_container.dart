@@ -9,14 +9,13 @@ class CreatePostContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     void createNewPost() {
       Navigator.pushNamed(context, AppRoutes.createPost);
     }
 
     return Container(
       width: double.infinity,
-      margin: EdgeInsets.only(top: 30),
+      margin: const EdgeInsets.only(top: 30),
       child: Card(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -28,21 +27,21 @@ class CreatePostContainer extends StatelessWidget {
                     backgroundImage:
                         AssetImage('assets/images/default_avatar.jpg'),
                   ),
-                  SizedBox(width: 8.0),
+                  const SizedBox(width: 8.0),
                   Expanded(
                       child: Container(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, AppRoutes.createPost);
-                            },
-                            child: const Text(
-                              "What\'s on your mind?.",
-                              style: TextStyle(
-                                color: Colors.grey,
-                              ),
-                            )),
-                      ))
+                    alignment: Alignment.centerLeft,
+                    child: TextButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, AppRoutes.createPost);
+                        },
+                        child: const Text(
+                          "What\'s on your mind?.",
+                          style: TextStyle(
+                            color: Colors.grey,
+                          ),
+                        )),
+                  ))
                 ],
               ),
               const Divider(height: 10.0, thickness: 0.5),
@@ -57,7 +56,7 @@ class CreatePostContainer extends StatelessWidget {
                         Icons.videocam_outlined,
                         color: Colors.red,
                       ),
-                      label: Text('Video'),
+                      label: const Text('Video'),
                     ),
                     const VerticalDivider(width: 8.0),
                     TextButton.icon(
@@ -66,7 +65,7 @@ class CreatePostContainer extends StatelessWidget {
                         Icons.photo_library_outlined,
                         color: Colors.lightGreen,
                       ),
-                      label: Text('Photo'),
+                      label: const Text('Photo'),
                     ),
                     const VerticalDivider(width: 8.0),
                     TextButton.icon(
@@ -75,7 +74,7 @@ class CreatePostContainer extends StatelessWidget {
                         Icons.photo_album_outlined,
                         color: Colors.pinkAccent,
                       ),
-                      label: Text('Album'),
+                      label: const Text('Album'),
                     ),
                   ],
                 ),

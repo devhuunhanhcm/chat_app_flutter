@@ -6,7 +6,7 @@ import 'package:chat_app_flutter/models/post.dart';
 import 'package:chat_app_flutter/models/user.dart';
 import 'package:chat_app_flutter/providers/user_provider.dart';
 import 'package:chat_app_flutter/utils/style/app_colors.dart';
-import 'package:chat_app_flutter/widget/post_cart.dart';
+import 'package:chat_app_flutter/widget/post_card.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +21,7 @@ class PostScreen extends StatefulWidget {
 class _PostScreenState extends State<PostScreen> {
   final PostService _postService = PostService();
   List following = [''];
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -28,18 +29,25 @@ class _PostScreenState extends State<PostScreen> {
     addData();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    _searchController.dispose();
+  }
+
   addData() async {
     List followingId = await _postService.getUserFollowId();
     log(followingId.toString());
-    setState(() {
-      following = followingId;
-    });
+    if (mounted) {
+      setState(() {
+        following = followingId;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     UserModel? user = Provider.of<UserProvider>(context).getUser;
-    TextEditingController _searchController = TextEditingController();
 
     return Scaffold(
       appBar: AppBar(
@@ -69,6 +77,7 @@ class _PostScreenState extends State<PostScreen> {
         stream: FirebaseFirestore.instance
             .collection('posts')
             .where("uid", whereIn: following)
+            .orderBy("createAt", descending: true)
             .snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -84,7 +93,9 @@ class _PostScreenState extends State<PostScreen> {
               itemCount: postDocs.length,
               itemBuilder: (context, index) {
                 Post post = Post.fromSnap(postDocs[index]);
-                return PostCard(post: post, user: user!);
+                return user != null
+                    ? PostCard(post: post, user: user)
+                    : const SizedBox();
               },
             );
           }

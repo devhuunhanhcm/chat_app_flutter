@@ -1,14 +1,13 @@
-import 'dart:developer';
+// ignore_for_file: use_build_context_synchronously
 
 import 'package:chat_app_flutter/firebase/post_service.dart';
 import 'package:chat_app_flutter/models/post.dart';
 import 'package:chat_app_flutter/models/user.dart';
+import 'package:chat_app_flutter/screens/CommentsScreen.dart';
 import 'package:chat_app_flutter/screens/HomeScreen.dart';
 import 'package:chat_app_flutter/utils/style/app_colors.dart';
 import 'package:chat_app_flutter/utils/toast/toast.dart';
-import 'package:chat_app_flutter/widget/comment_card.dart';
 import 'package:chat_app_flutter/widget/contact_avatar.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:flutter/material.dart';
 
@@ -25,18 +24,19 @@ class PostCard extends StatefulWidget {
 class _PostCardState extends State<PostCard> {
   bool isLike = false;
   int likes = 0;
-  int comments = 0;
-  TextEditingController commentController = TextEditingController();
-  PostService _postService = PostService();
 
   @override
   void initState() {
+    super.initState();
     setState(() {
       likes = widget.post.likes.length;
       isLike = widget.post.likes.contains(widget.user.uid);
-      comments = widget.post.comments.length;
     });
-    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   handleLike() async {
@@ -50,27 +50,6 @@ class _PostCardState extends State<PostCard> {
         isLike = !isLike;
         likes = isLike ? ++likes : --likes;
       });
-    }
-  }
-
-  void postComment(String uid, String fullName, String photoUrl) async {
-    try {
-      String res = await _postService.postComment(
-        widget.post.postId,
-        commentController.text,
-        uid,
-        fullName,
-        photoUrl,
-      );
-
-      if (res != 'success') {
-        if (context.mounted) {}
-      }
-      setState(() {
-        commentController.text = "";
-      });
-    } catch (err) {
-      log(err.toString());
     }
   }
 
@@ -182,10 +161,9 @@ class _PostCardState extends State<PostCard> {
             ],
           ),
           const SizedBox(height: 20.0),
-          Container(
-              child: Text(widget.post.content,
-                  style: const TextStyle(fontSize: 15.0),
-                  textAlign: TextAlign.left)),
+          Text(widget.post.content,
+              style: const TextStyle(fontSize: 15.0),
+              textAlign: TextAlign.left),
           const SizedBox(height: 10.0),
           widget.post.postUrl != ''
               ? SizedBox(
@@ -207,7 +185,7 @@ class _PostCardState extends State<PostCard> {
               ),
               Row(
                 children: <Widget>[
-                  Text('$comments comments'),
+                  Text('${widget.post.commentNum} comments'),
                 ],
               ),
             ],
@@ -234,8 +212,12 @@ class _PostCardState extends State<PostCard> {
                 style:
                     TextButton.styleFrom(foregroundColor: AppColors.blackColor),
                 onPressed: () {
-                  showCommnet(context, widget.post, widget.user,
-                      commentController, postComment);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => CommentsScreen(
+                            user: widget.user, post: widget.post)),
+                  );
                 },
                 icon: const Icon(
                   Icons.comment_outlined,
@@ -250,93 +232,4 @@ class _PostCardState extends State<PostCard> {
       ),
     );
   }
-}
-
-Future showCommnet(BuildContext context, Post post, UserModel user,
-    TextEditingController commentController, postComment) {
-  log(post.comments.length.toString());
-  return showModalBottomSheet(
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
-      context: context,
-      builder: (BuildContext context) {
-        return Padding(
-          padding:
-              EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: SizedBox(
-            height: 600,
-            width: double.infinity,
-            child: Column(
-              children: [
-                Expanded(
-                  child: StreamBuilder(
-                    stream: FirebaseFirestore.instance
-                        .collection('posts')
-                        .doc(post.postId)
-                        .collection('comments')
-                        .snapshots(),
-                    builder: (context,
-                        AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
-                            snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      }
-
-                      return ListView.builder(
-                        itemCount: snapshot.data!.docs.length,
-                        itemBuilder: (ctx, index) => CommentCard(
-                          snap: snapshot.data!.docs[index],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  child: Row(
-                    children: [
-                      ContactAvatar(url: user.photoUrl, size: 20),
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 10),
-                          decoration: BoxDecoration(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(10)),
-                              color: Colors.grey[300]),
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 16, right: 8),
-                            child: TextField(
-                              controller: commentController,
-                              decoration: InputDecoration(
-                                hintText: 'Comment as ${user.username}',
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () => postComment(
-                          user.uid,
-                          user.fullName,
-                          user.photoUrl,
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 8, horizontal: 8),
-                          child: const Icon(Icons.send_outlined),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      });
 }

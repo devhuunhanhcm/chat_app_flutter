@@ -26,7 +26,6 @@ class ChatService {
       chatRoom = existingChatroom;
     } else {
       String chatRoomId = const Uuid().v1();
-      // Create a new one
       ChatRoom newChatroom = ChatRoom(
           id: chatRoomId,
           lastMessage: "",
@@ -43,7 +42,6 @@ class ChatService {
 
       chatRoom = newChatroom;
     }
-
     return chatRoom;
   }
 

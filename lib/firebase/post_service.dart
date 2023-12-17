@@ -1,4 +1,5 @@
 import 'package:chat_app_flutter/firebase/storage_methods.dart';
+import 'package:chat_app_flutter/models/comment.dart';
 import 'package:chat_app_flutter/models/post.dart';
 import 'package:chat_app_flutter/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -26,14 +27,19 @@ class PostService {
         content: description,
         likes: [],
         comments: [],
-        datePublished: DateTime.now(),
+        createAt: DateTime.now(),
         uid: user.uid,
         fullName: user.fullName,
         postUrl: photoUrl,
         profImage: user.photoUrl,
+        commentNum: 0,
       );
 
       await _firestore.collection('posts').doc(postId).set(post.toJson());
+      await _firestore
+          .collection('users')
+          .doc(user.uid)
+          .update({"postNum": (user.postNum + 1)});
       res = "success";
     } catch (err) {
       res = err.toString();
@@ -139,26 +145,28 @@ class PostService {
 
   // Post comment
   Future<String> postComment(String postId, String text, String uid,
-      String fullName, String photoUrl) async {
+      String fullName, String photoUrl, int commentNum) async {
     String res = "Some error occurred";
     try {
       if (text.isNotEmpty) {
-        // if the likes list contains the user uid, we need to remove it
         String commentId = const Uuid().v1();
+        Comment comment = Comment(
+            commentId: commentId,
+            uid: uid,
+            photoUrl: photoUrl,
+            fullName: fullName,
+            text: text,
+            datePublished: DateTime.now());
         await _firestore
             .collection('posts')
             .doc(postId)
             .collection('comments')
             .doc(commentId)
-            .set({
-          'photoUrl': photoUrl,
-          'fullName': fullName,
-          'uid': uid,
-          'text': text,
-          'commentId': commentId,
-          'datePublished': DateTime.now(),
-        });
-
+            .set(comment.toMap());
+        await _firestore
+            .collection('posts')
+            .doc(postId)
+            .update({'commentNum': commentNum});
         res = 'success';
       } else {
         res = "Please enter text";

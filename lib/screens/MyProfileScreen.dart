@@ -34,7 +34,7 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
       context: parentContext,
       builder: (BuildContext context) {
         return SimpleDialog(
-          title: const Text('Create a Post'),
+          title: const Text('Create a images'),
           children: <Widget>[
             SimpleDialogOption(
                 padding: const EdgeInsets.all(20),

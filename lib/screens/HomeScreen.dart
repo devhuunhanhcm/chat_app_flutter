@@ -29,11 +29,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
+    super.initState();
     addData();
     setState(() {
       index = widget.tab;
     });
-    super.initState();
     SystemChannels.lifecycle.setMessageHandler((message) {
       log('Message: $message');
 
